@@ -177,7 +177,7 @@ def get_search_results(textToSearch: str) -> list[list[str]]:
         "--add-header", "Upgrade-Insecure-Requests: 1",
     ]
 
-    cmd = yt_dlp_cmd + ["-j", "--no-playlist", "--flat-playlist", headers, yt_search]
+    cmd = yt_dlp_cmd + ["-j", "--no-playlist", "--flat-playlist"] + headers + [yt_search]
     logging.debug("BiliBili search command: " + " ".join(cmd))
     try:
         output = subprocess.check_output(cmd).decode("utf-8", "ignore")
