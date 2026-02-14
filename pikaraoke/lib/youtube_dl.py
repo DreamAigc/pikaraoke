@@ -4,6 +4,8 @@ import os
 import shlex
 import subprocess
 import sys
+import requests
+import time
 
 from pikaraoke.lib.get_platform import get_installed_js_runtime
 
@@ -150,6 +152,64 @@ def build_ytdl_download_command(
     cmd += [video_url]
     return cmd
 
+def search_bilibili_via_api(query, max_results=5):
+    """
+       使用 Bilibili 公开搜索 API 获取视频列表
+       """
+    if not query.strip():
+        return []
+
+    # Bilibili 搜索 API（公开，无需登录）
+    search_api = "https://api.bilibili.com/x/web-interface/search/type"
+
+    params = {
+        "search_type": "video",
+        "keyword": query,
+        "page": 1,
+        "order": "pubdate",  # 按最新发布排序
+        "duration": 0,  # 全部时长
+        "tids": 0  # 全部分区
+    }
+
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+        "Referer": "https://search.bilibili.com/",
+        "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
+        "Accept": "application/json",
+        "Origin": "https://search.bilibili.com"
+    }
+
+    try:
+        response = requests.get(
+            search_api,
+            params=params,
+            headers=headers,
+            timeout=10
+        )
+        response.raise_for_status()
+        data = response.json()
+
+        if data.get("code") != 0:
+            print(f"[Bilibili API] Error: {data.get('message', 'Unknown')}")
+            return []
+
+        results = []
+        for item in data.get("data", {}).get("result", [])[:max_results]:
+            # 构造标准 Bilibili 视频 URL
+            if item.get("arcurl"):
+                results.append({
+                    "id": item.get("bvid"),
+                    "title": item.get("title", "").replace("<em class=\"keyword\">", "").replace("</em>", ""),  # 移除高亮标签
+                    "url": item["arcurl"],
+                    "thumbnail": item.get("pic", ""),
+                    "duration": self._format_duration(item.get("duration", 0)),
+                    "uploader": item.get("author", "Unknown")
+                })
+        return results
+
+    except Exception as e:
+        print(f"[Bilibili Search API Error] {e}")
+        return []
 
 def get_search_results(textToSearch: str) -> list[list[str]]:
     """Search YouTube for videos matching the query.
@@ -164,6 +224,11 @@ def get_search_results(textToSearch: str) -> list[list[str]]:
         Exception: If the search fails.
     """
     logging.info("Searching BiliBili for: " + textToSearch)
+
+    print('-'*40)
+    print(search_bilibili_via_api(textToSearch))
+    print('-'*40)
+
     num_results = 10
     yt_search = 'bilisearch%d:"%s"' % (num_results, textToSearch)
 
