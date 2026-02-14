@@ -166,7 +166,18 @@ def get_search_results(textToSearch: str) -> list[list[str]]:
     logging.info("Searching BiliBili for: " + textToSearch)
     num_results = 10
     yt_search = 'bilisearch%d:"%s"' % (num_results, textToSearch)
-    cmd = yt_dlp_cmd + ["-j", "--no-playlist", "--flat-playlist", yt_search]
+
+    headers = [
+        "--add-header",
+        "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+        "--add-header", "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+        "--add-header", "Accept-Language: zh-CN,zh;q=0.9,en;q=0.8",
+        "--add-header", "Accept-Encoding: gzip, deflate",
+        "--add-header", "Connection: keep-alive",
+        "--add-header", "Upgrade-Insecure-Requests: 1",
+    ]
+
+    cmd = yt_dlp_cmd + ["-j", "--no-playlist", "--flat-playlist", headers, yt_search]
     logging.debug("BiliBili search command: " + " ".join(cmd))
     try:
         output = subprocess.check_output(cmd).decode("utf-8", "ignore")
