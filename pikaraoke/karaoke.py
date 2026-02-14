@@ -341,7 +341,7 @@ class Karaoke:
         Returns:
             List of [title, url, video_id] for each result.
         """
-        return get_search_results(songTitle + " karaoke")
+        return get_search_results(songTitle + " MV")
 
     def send_notification(self, message: str, color: str = "primary") -> None:
         """Send a notification to the web interface.

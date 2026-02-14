@@ -163,11 +163,11 @@ def get_search_results(textToSearch: str) -> list[list[str]]:
     Raises:
         Exception: If the search fails.
     """
-    logging.info("Searching YouTube for: " + textToSearch)
+    logging.info("Searching BiliBili for: " + textToSearch)
     num_results = 10
-    yt_search = 'ytsearch%d:"%s"' % (num_results, textToSearch)
+    yt_search = 'bilisearch%d:"%s"' % (num_results, textToSearch)
     cmd = yt_dlp_cmd + ["-j", "--no-playlist", "--flat-playlist", yt_search]
-    logging.debug("Youtube-dl search command: " + " ".join(cmd))
+    logging.debug("BiliBili search command: " + " ".join(cmd))
     try:
         output = subprocess.check_output(cmd).decode("utf-8", "ignore")
         logging.debug("Search results: " + output)
@@ -177,7 +177,9 @@ def get_search_results(textToSearch: str) -> list[list[str]]:
                 j = json.loads(each)
                 if (not "title" in j) or (not "url" in j):
                     continue
-                rc.append([j["title"], j["url"], j["id"]])
+                # 缩略图
+                thumbnail = j['pic'] or f"https://i0.hdslb.com/bfs/archive/{j['id']}_1.jpg"
+                rc.append([j["title"], j["url"], j["id"], thumbnail, j['duration']])
         return rc
     except Exception as e:
         logging.debug("Error while executing search: " + str(e))
