@@ -6,6 +6,7 @@ import subprocess
 import sys
 import requests
 import time
+from pprint import pprint
 
 from pikaraoke.lib.get_platform import get_installed_js_runtime
 
@@ -152,6 +153,7 @@ def build_ytdl_download_command(
     cmd += [video_url]
     return cmd
 
+
 def search_bilibili_via_api(query, max_results=5):
     """
        使用 Bilibili 公开搜索 API 获取视频列表
@@ -188,6 +190,7 @@ def search_bilibili_via_api(query, max_results=5):
         )
         response.raise_for_status()
         data = response.json()
+        pprint(data)
 
         if data.get("code") != 0:
             print(f"[Bilibili API] Error: {data.get('message', 'Unknown')}")
